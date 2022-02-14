@@ -18,4 +18,4 @@
  - Example: ``python deploy_model_pipeline.py -m mobilenet_split-23 -c 1000 --target 2,0 --logfile mobilenet_tuned_cuda.json,mobilenet_tuned_llvm.json``  
        - *model*: manually implemented network partitions. Use ``--model mobilenet_split-help`` to check options for implemented partition points. 
        - *target*: according to list provided by ``python deploy_model_pipeline.py -m model --target help`` 
-       
+![Alt text](pipeline-plot.png "Pipeline") 
