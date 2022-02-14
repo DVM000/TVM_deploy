@@ -37,8 +37,8 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
     if 'split' in name:
         Nsplit = int( name.split('split-')[1].split('_')[0] )
         if 'mobilenet' in name:
-            if Nsplit not in [5, 6, 23, 27]: 
-                print(bcolors.FAIL + '\t mobilenet_split-N options: 5, 6, 23, 27'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
+            if Nsplit not in [4, 5, 6, 23, 27]: 
+                print(bcolors.FAIL + '\t mobilenet_split-N options: 4, 5, 6, 23, 27'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'squeezenet' in name:
             if Nsplit not in [6, 32, 37]: 
                 print(bcolors.FAIL + '\t squeezenet_split-N options: 6, 32, 37'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
@@ -71,6 +71,13 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.mobilenet.get_workload(
             batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape
         )
+
+    elif name == "mobilenet_split-4_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=4,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,64,56,56);
+    elif name == "mobilenet_split-4_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=4,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,64,56,56);
 
     elif name == "mobilenet_split-5_0":
         mod, params = relay.testing.mobilenet_split.get_workload(N=5,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)

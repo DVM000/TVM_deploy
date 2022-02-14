@@ -210,15 +210,37 @@ def mobile_net(
     body = separable_conv_block(
         body, "separable_conv_block_1", int(32 * alpha), int(64 * alpha), layout=layout, dtype=dtype
     )
-    body = separable_conv_block(
-        body,
-        "separable_conv_block_2",
-        int(64 * alpha),
-        int(128 * alpha),
-        downsample=True,
-        layout=layout,
-        dtype=dtype,
-    )
+    if N == 4:
+        body = separable_conv_block_A(
+            body,
+            "separable_conv_block_2_a",
+            int(64 * alpha),
+            int(128 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+        body1 = body
+        data2 = relay.var("data", shape=(data_shape[0],64,56,56), dtype=dtype)
+        body = separable_conv_block_B(
+            data2,
+            "separable_conv_block_2_b",
+            int(64 * alpha),
+            int(128 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+    else:
+        body = separable_conv_block(
+            body,
+            "separable_conv_block_2",
+            int(64 * alpha),
+            int(128 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
     if N==5: 
         body1 = body
         body = relay.var("data", shape=(data_shape[0],128,56,56), dtype=dtype)
@@ -382,7 +404,7 @@ def get_workload(
     params : dict of str to NDArray
         The parameters.
     """
-    if N != 5 and N != 6 and N != 23 and N != 25 and N != 27 and N != 30:
+    if N != 4 and N != 5 and N != 6 and N != 23 and N != 25 and N != 27 and N != 30:
         print('mobilenet partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     data_shape = tuple([batch_size] + list(image_shape))
