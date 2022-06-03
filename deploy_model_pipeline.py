@@ -33,7 +33,9 @@ parser.add_argument(
       '-c', '--count', type=int, default=1000,
       help='Number of times to run inference')
 parser.add_argument(
-      '--printinfo', help='To test script on only one device', action="store_true", default=False)
+      '--printinfo', help='Show runtime info', action="store_true", default=False)
+parser.add_argument(
+      '--plot', help='Plot diagram', action="store_true", default=False)
 parser.add_argument(
        '--logfile', required=False, default="_,_", help='Comma-separated list of Tuning log files. Use _,_ for not loading log_file')
 
@@ -45,6 +47,7 @@ MAX_N = args.count
 log_file = [k for k in args.logfile.split(',')]
 
 PRINT_INFO = args.printinfo  
+PLOT = args.plot 
 
 ####
 import tvm.testing
@@ -97,7 +100,7 @@ data_in2 = tvm.nd.array((np.random.uniform(size=input_shape[1])).astype(dtype))
 ## Build libraries and create graph_executor
 ## ----------------------------------------------------------------------------------------
 input_data_filled = []
-output_consumed = []
+ready_for_data = []
 print("\n -- Building graphs -- \n")
 for i,c in enumerate(CONF):
     print("  Using Target {} and device {}".format(c['target'], c['dev']))
@@ -114,18 +117,18 @@ for i,c in enumerate(CONF):
     c['module'] = graph_executor.GraphModule(lib["default"](c['dev'])) 
 
     input_data_filled.append( threading.Event() )
-    input_data_filled[i].clear() # waits for new input data
+    input_data_filled[i].clear() # there is no new input data
 
-    output_consumed.append( threading.Event() )
-    output_consumed[i].set() # input data has been taken
+    ready_for_data.append( threading.Event() )
+    ready_for_data[i].set() # ready for receiving new input data 
 
         
 class subGraph:
     """
     Class to execute model partition (#idx) in a new Python Thread.
     - Class that successively run TVM workload, when a new input is available (input_data_filled[idx] is set). 
-    - Once read the input, it is again ready for receiving new inputs (output_consumed[idx] is set, input_data_filled[idx] is clean)
-    - Workload in the loop is only executed when previous iteration's output data have been externally fetched (output_consumed[idx+1] is set)
+    - Once read the input -- and processed --, it is again ready for receiving new inputs (ready_for_data[idx] is set, input_data_filled[idx] is clean)
+    - Workload in the loop is only executed when previous iteration's output data have been externally fetched (ready_for_data[idx+1] is set)
 
     Parameters
     ----------
@@ -145,7 +148,7 @@ class subGraph:
     def __init__(self, module, dev, input_tensor, idx, key = 0, autoinput = 0):
         self.key = key
         self.module = module
-        #self.module.run() ## running 1st inference (slower)
+        self.module.run() ## running 1st inference (slower)
         self.dev = dev
         self.input_tensor = input_tensor
         self.input_data = None 
@@ -170,23 +173,27 @@ class subGraph:
 
     def run_(self):
 
-        global t0, tt 
+        global t0, tt, t_in, t_in2, t_out1
         self.status = 1
         while( self.N < MAX_N and self.status != -1):
             # -- a) waits for new input data -- #            
-            input_data_filled[self.idx].wait()
-            output_consumed[self.idx].clear() # received but still need to read data and set it as module input
+            input_data_filled[self.idx].wait() # waits for new input data
+            ready_for_data[self.idx].clear()  # not ready for new input: data received but still need to read data and set it as module input
 
             # b) -- Take and process data -- #
             self.trun0 = time.time()
+            if self.autoinput: t_in.append(1e3*(self.trun0 -t0))
+            else:              
+                if (PLOT):     t_in2.append(1e3*(self.trun0 -t0))
             if PRINT_INFO:  print(self.color + "img#{} [ {:.1f}           {}".format(self.N, 1e3*(self.trun0-t0), self.input_data.shape) + bcolors.ENDC)
 
             self.module.set_input(self.input_tensor, self.input_data) # set input to TVM (sub)graph
-
-            # c) -- Let receive new input again -- #
-            output_consumed[self.idx].set()
+            
+            # this could be here, but it would make latency higher:
+            '''# b.1) -- Let receive new input again -- #
+            ready_for_data[self.idx].set()
             if not self.autoinput: # if not autoinput
-                input_data_filled[self.idx].clear()    
+                input_data_filled[self.idx].clear()  ''' 
 
             # b) -- ... and process data -- #     
             self.module.run() # run TVM (sub)graph
@@ -196,13 +203,20 @@ class subGraph:
             self.mean_t.append(self.trun1-self.trun0)
             if PRINT_INFO:  print(self.color + "              {:.1f} ]  ({:.1f} ms/run)".format(1e3*(self.trun1-t0), 1e3*(self.trun1-self.trun0)) + bcolors.ENDC)
 
-            # d) -- Waits for data being fetched (not using any queue) -- #
+            # b.1) -- Let receive new input again -- #
+            ready_for_data[self.idx].set() # ready for receiving new input data
+            if not self.autoinput: # if not autoinput
+                input_data_filled[self.idx].clear() # there is no input data
+
+            # c) -- Waits for data being fetched (not using any queue) -- #
             if self.subGraph2 !=0: # if there is a second graph
                 #print(self.color + "[{}] >> waiting before sending img {}".format(self.key, self.N) + bcolors.ENDC); 
-                output_consumed[self.subGraph2.idx].wait()
+                if (PLOT):    t_out1.append( 1e3*(time.time() -t0) )
+                ready_for_data[self.subGraph2.idx].wait() # waits before transfering data
                 self.subGraph2.set_input_data( tvm.nd.array(self.output) ) # transfer data to subGraph object
             else:
                 tt.append( 1e3*(time.time() -t0) )
+                
   
             if PRINT_INFO:  print(self.color + "              {:.1f} output #{} delivered ".format(1e3*(time.time()-t0), self.N) + bcolors.ENDC)
 
@@ -211,8 +225,20 @@ class subGraph:
         print(self.color + "[{}] >> {} executions -- avg {:.2f} ms/run\n".format(self.key, self.N, 1e3*np.mean(self.mean_t)) + bcolors.ENDC)
 
         self.status = -1 
-        if self.subGraph2 ==0:  print(bcolors.HEADER + "Average throughput {:.1f} fps ({:.2f} ms/img) \t-- elapsed time {:.2f} s \n".format( 1e3/np.mean(np.diff(tt)), np.mean(np.diff(tt)), time.time()-t0) + bcolors.ENDC)
+        if self.subGraph2 ==0:  print(bcolors.HEADER + "Average throughput {:.1f} fps ({:.2f} ms/img) \t-- elapsed time {:.2f} s \n".format( 1e3/np.mean(np.diff(tt[1:])), np.mean(np.diff(tt[1:])), time.time()-t0) + bcolors.ENDC)
+        if self.subGraph2 ==0:  print(bcolors.HEADER + "Average latency {:.1f} ms \n".format( np.mean( np.array(tt[1:])-np.array(t_in[1:]) ) ) + bcolors.ENDC) 
 
+        if (PLOT and self.subGraph2 ==0):
+            dur1 = np.array(t_out1) - np.array(t_in) 
+            dur2 = np.array(tt) - np.array(t_in2) 
+            import matplotlib.pyplot as plt
+            plt.figure(figsize=(20,2))
+            MAXp = min([15,len(dur1)])
+            plt.barh(1*np.ones(MAXp), width=dur1[:MAXp], left=t_in[:MAXp], color='b', edgecolor='k')
+            plt.barh(0*np.ones(MAXp), width=dur2[:MAXp], left=t_in2[:MAXp], color='g', edgecolor='k')
+            plt.xlabel('time (ms)'); plt.ylabel('sub-graph'); plt.yticks([0,1],['#1','#0'])
+            plt.savefig('experimental-diagram-pipeline.png', bbox_inches = 'tight')
+            print('saved experimental-diagram-pipeline.png')
 
     def get_status(self):
         return self.status
@@ -224,7 +250,7 @@ class subGraph:
     def set_input_data(self, input_data):
         self.input_data = input_data
         input_data_filled[self.idx].set() # new input data available
-        output_consumed[self.idx].clear() # do not let receive new input data (until it is used)
+        ready_for_data[self.idx].clear() # do not let receive new input data (until it is used)
 
     def get_output(self):
         return self.output
@@ -235,6 +261,10 @@ class subGraph:
 
 tt = [] # output time instants
 
+t_in = [] # start processing new input time instants
+t_in2 = []
+t_out1 = []
+
 runner = []
 
 for i,c in enumerate(CONF):
@@ -244,6 +274,7 @@ for i,c in enumerate(CONF):
 runner[0].set_2sub(runner[1])
 for r in runner:
     r.start() # waiting data
+
 
 print("\n Starting -------------------------------------- \n ")
 t0 = time.time()

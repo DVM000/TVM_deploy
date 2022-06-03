@@ -109,12 +109,19 @@ def get_net(N, batch_size, image_shape, num_classes, version, dtype):
         
     net = _make_fire(net, 16, 64, 64, "fire2")
     net = relay.nn.max_pool2d(net, pool_size=(3, 3), strides=(2, 2))
+    if N == 10: 
+        net1 = net
+        net = relay.var("data", shape=(batch_size, 128, 27, 27), dtype=dtype)
+
     net = _make_fire(net, 32, 128, 128, "fire3")
     net = _make_fire(net, 32, 128, 128, "fire4")
     #net = relay.var("data", shape=(batch_size, 256, 27, 27), dtype=dtype)
     net = relay.nn.max_pool2d(net, pool_size=(3, 3), strides=(2, 2))
     net = _make_fire(net, 48, 192, 192, "fire5")
-    #net = relay.var("data", shape=(batch_size, 384, 13, 13), dtype=dtype)
+    if N == 24: 
+        net1 = net
+        net = relay.var("data", shape=(batch_size, 384, 13, 13), dtype=dtype)
+
     net = _make_fire(net, 48, 192, 192, "fire6")
     net = _make_fire(net, 64, 256, 256, "fire7")
     if N == 32: 
@@ -125,7 +132,10 @@ def get_net(N, batch_size, image_shape, num_classes, version, dtype):
     net = relay.nn.dropout(net, rate=0.5)
     #net = relay.var("data", shape=(batch_size, 512, 13, 13), dtype=dtype)
     net = layers.conv2d(net, channels=num_classes, kernel_size=(1, 1), name="conv_final")
-    #net = relay.var("data", shape=(batch_size, 1000, 13, 13), dtype=dtype)
+    if N == 36:
+        net1 = net
+        net = net = relay.var("data", shape=(batch_size, 1000, 13, 13), dtype=dtype)
+
     net = relay.nn.bias_add(net, relay.var("conv_final_bias"))
     net = relay.nn.relu(net)
     if N == 37:
@@ -133,6 +143,10 @@ def get_net(N, batch_size, image_shape, num_classes, version, dtype):
         net = net = relay.var("data", shape=(batch_size, 1000, 13, 13), dtype=dtype)
 
     net = relay.nn.global_avg_pool2d(net)
+    if N == 38:
+        net1 = net
+        net = net = relay.var("data", shape=(batch_size, 1000, 1, 1), dtype=dtype)
+
     net = relay.nn.batch_flatten(net)
     net = relay.nn.softmax(net)
 
@@ -169,7 +183,7 @@ def get_workload(
     params : dict of str to NDArray
         The parameters.
     """
-    if  N != 6 and N != 32 and N != 37:
+    if  N != 6 and N != 10 and N != 24 and N != 32 and N != 36 and N != 37 and N != 38:
         print('squeezenet partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     net = get_net(N, batch_size, image_shape, num_classes, version, dtype)

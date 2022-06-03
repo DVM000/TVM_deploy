@@ -40,8 +40,8 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
             if Nsplit not in [4, 5, 6, 23, 27]: 
                 print(bcolors.FAIL + '\t mobilenet_split-N options: 4, 5, 6, 23, 27'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'squeezenet' in name:
-            if Nsplit not in [6, 32, 37]: 
-                print(bcolors.FAIL + '\t squeezenet_split-N options: 6, 32, 37'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
+            if Nsplit not in [6, 10, 24, 32, 36, 37, 38]: 
+                print(bcolors.FAIL + '\t squeezenet_split-N options: 6, 10, 24, 32, 36, 37, 38'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'inception_v3' in name:
             if Nsplit not in [5, 88, 107]: 
                 print(bcolors.FAIL + '\t inception_v3_split-N options: 5, 88, 107'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
@@ -130,6 +130,20 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.squeezenet_split.get_workload(N=6, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size, 128, 55, 55)
 
+    elif name == "squeezenet_split-10_0":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=10, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size, 128, 27, 27)
+    elif name == "squeezenet_split-10_1":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=10, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size, 128, 27, 27)
+
+    elif name == "squeezenet_split-24_0":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=24, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size, 384, 13, 13)
+    elif name == "squeezenet_split-24_1":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=24, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size, 384, 13, 13)
+
     elif name == "squeezenet_split-32_0":
         mod, params = relay.testing.squeezenet_split.get_workload(N=32, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         output_shape = (batch_size, 512, 13, 13)
@@ -137,12 +151,26 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.squeezenet_split.get_workload(N=32, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size, 512, 13, 13)
 
+    elif name == "squeezenet_split-36_0":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=36, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size, 1000, 13, 13)
+    elif name == "squeezenet_split-36_1":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=36, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size, 1000, 13, 13)
+
     elif name == "squeezenet_split-37_0":
         mod, params = relay.testing.squeezenet_split.get_workload(N=37, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         output_shape = (batch_size, 1000, 13, 13)
     elif name == "squeezenet_split-37_1":
         mod, params = relay.testing.squeezenet_split.get_workload(N=37, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size, 1000, 13, 13)
+
+    elif name == "squeezenet_split-38_0":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=38, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size, 1000, 1, 1)
+    elif name == "squeezenet_split-38_1":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=38, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size, 1000, 1, 1)
 
 
     elif name == "inception_v3":
@@ -160,10 +188,10 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
     elif name == "inception_v3_split-88_0":
         input_shape = (batch_size, 3, 299, 299) if layout == "NCHW" else (batch_size, 299, 299, 3)
         mod, params = relay.testing.inception_v3_split.get_workload(N=88, npartition=0, batch_size=batch_size, dtype=dtype)
-        output_shape = (batch_size, 1280,8,8)
+        output_shape = (batch_size, 768, 17,17)
     elif name == "inception_v3_split-88_1":
         mod, params = relay.testing.inception_v3_split.get_workload(N=88, npartition=1, batch_size=batch_size, dtype=dtype)
-        input_shape  = (batch_size, 1280,8,8)
+        input_shape  = (batch_size, 768, 17,17)
 
     elif name == "inception_v3_split-107_0":
         input_shape = (batch_size, 3, 299, 299) if layout == "NCHW" else (batch_size, 299, 299, 3)
@@ -171,7 +199,7 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         output_shape = (batch_size, 2048,8,8)
     elif name == "inception_v3_split-107_1":
         mod, params = relay.testing.inception_v3_split.get_workload(N=107, npartition=1, batch_size=batch_size, dtype=dtype)
-        input_shape  = (batch_size, 1280,8,8)
+        input_shape  = (batch_size, 2048,8,8)
 
 
     elif name == "mxnet":
