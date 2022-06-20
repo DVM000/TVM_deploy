@@ -190,6 +190,7 @@ class subGraph:
             self.module.set_input(self.input_tensor, self.input_data) # set input to TVM (sub)graph
             
             # this could be here, but it would make latency higher:
+            # (pipelining the data transfer with data computation)
             '''# b.1) -- Let receive new input again -- #
             ready_for_data[self.idx].set()
             if not self.autoinput: # if not autoinput
@@ -260,7 +261,6 @@ class subGraph:
 
 
 tt = [] # output time instants
-
 t_in = [] # start processing new input time instants
 t_in2 = []
 t_out1 = []

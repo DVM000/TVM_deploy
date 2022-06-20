@@ -1,4 +1,4 @@
-# TVM files for tuning, compiling and running CNN models
+# TVM heterogeneous co-execution. Files for tuning, compiling and running CNN models
 
 1. **``tune_network_<cuda/arm>_TX2local.py``**
  - Tune network using TVM Ansor targeting to GPU/CPU (to be locally executed on the platform) 
