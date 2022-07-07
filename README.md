@@ -1,7 +1,7 @@
 # TVM heterogeneous co-execution
 
 Files for tuning, compiling and running CNN models:
-https://github.com/apache/tvm
+
 1. Tune: **``tune_network_<cuda/arm>_TX2local.py``**
  - Tune network using TVM Ansor targeting to GPU/CPU (to be locally executed on the platform) 
  - Example: ``python tune_network_arm_TX2local.py -m mobilenet --logfile mobilenet_tuned_cuda.json --layout NCHW`` 
@@ -21,3 +21,5 @@ https://github.com/apache/tvm
    - *model*: manually defined network sub-graphs. Use ``--model mobilenet_split-help`` to check options for implemented partition points. 
    - *target*: according to list provided by ``python deploy_model_pipeline.py -m model --target help``. 
 ![Alt text](pipeline-plot.png "Pipeline") 
+
+TVM repository and documentation: https://github.com/apache/tvm
