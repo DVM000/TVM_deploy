@@ -102,6 +102,10 @@ def get_net(N, batch_size, image_shape, num_classes, version, dtype):
     net = relay.nn.bias_add(net, relay.var("conv1_bias"))
     net = relay.nn.relu(net)
     net = relay.nn.max_pool2d(net, pool_size=(3, 3), strides=(2, 2))
+    if N == 2: 
+        net1 = net
+        net = relay.var("data", shape=(batch_size, 64, 55, 55), dtype=dtype)
+
     net = _make_fire(net, 16, 64, 64, "fire1")
     if N == 6: 
         net1 = net
@@ -183,7 +187,7 @@ def get_workload(
     params : dict of str to NDArray
         The parameters.
     """
-    if  N != 6 and N != 10 and N != 24 and N != 32 and N != 36 and N != 37 and N != 38:
+    if N not in [2, 6, 10, 24, 32, 36, 37, 38]:
         print('squeezenet partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     net = get_net(N, batch_size, image_shape, num_classes, version, dtype)

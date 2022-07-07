@@ -40,7 +40,7 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
             if Nsplit not in [4, 5, 6, 23, 27]: 
                 print(bcolors.FAIL + '\t mobilenet_split-N options: 4, 5, 6, 23, 27'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'squeezenet' in name:
-            if Nsplit not in [6, 10, 24, 32, 36, 37, 38]: 
+            if Nsplit not in [2, 6, 10, 24, 32, 36, 37, 38]: 
                 print(bcolors.FAIL + '\t squeezenet_split-N options: 6, 10, 24, 32, 36, 37, 38'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'inception_v3' in name:
             if Nsplit not in [5, 88, 107]: 
@@ -123,6 +123,13 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
             dtype=dtype,
             image_shape=image_shape,
         )
+    elif name == "squeezenet_split-2_0":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=2, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size, 64, 55, 55)
+    elif name == "squeezenet_split-2_1":
+        mod, params = relay.testing.squeezenet_split.get_workload(N=2, npartition=1, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size, 64, 55, 55)
+
     elif name == "squeezenet_split-6_0":
         mod, params = relay.testing.squeezenet_split.get_workload(N=6, npartition=0, batch_size=batch_size, dtype=dtype, image_shape=image_shape)
         output_shape = (batch_size, 128, 55, 55)

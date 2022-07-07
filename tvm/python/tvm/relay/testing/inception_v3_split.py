@@ -452,7 +452,7 @@ def get_workload(N=88, npartition=0, batch_size=1, num_classes=1000, image_shape
     params : dict of str to NDArray
         The parameters.
     """
-    if  N != 5 and N != 88 and N != 107:
+    if N not in [5, 88, 107]:
         print('inception-v3 partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     net = get_net(N, batch_size, num_classes, image_shape, dtype)

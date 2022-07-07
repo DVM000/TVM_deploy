@@ -404,7 +404,7 @@ def get_workload(
     params : dict of str to NDArray
         The parameters.
     """
-    if N != 4 and N != 5 and N != 6 and N != 23 and N != 25 and N != 27 and N != 30:
+    if N not in [4, 5, 6, 23, 25, 27, 30]:
         print('mobilenet partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     data_shape = tuple([batch_size] + list(image_shape))

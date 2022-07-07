@@ -33,8 +33,8 @@ parser.add_argument(
 parser.add_argument(
        '--port', required=False, default="9090", help='Remote RPC-Server Port')
 parser.add_argument(
-      '-c', '--count', type=int, default=0,
-      help='Number of times to run inference. If zero, benchmark will take at least min_repeat_ms=500')
+      '-c', '--count', type=int, default=1000,
+      help='Number of times to run inference')
 parser.add_argument(
        '--logfile', required=False, default="", help='Tuning log file')
 
