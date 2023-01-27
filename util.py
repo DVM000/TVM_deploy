@@ -37,8 +37,8 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
     if 'split' in name:
         Nsplit = int( name.split('split-')[1].split('_')[0] )
         if 'mobilenet' in name:
-            if Nsplit not in [4, 5, 6, 23, 27]: 
-                print(bcolors.FAIL + '\t mobilenet_split-N options: 4, 5, 6, 23, 27'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
+            if Nsplit not in range(1,31): 
+                print(bcolors.FAIL + '\t mobilenet_split-N options: 1, 2, ..., 30'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
         if 'squeezenet' in name:
             if Nsplit not in [2, 6, 10, 24, 32, 36, 37, 38]: 
                 print(bcolors.FAIL + '\t squeezenet_split-N options: 6, 10, 24, 32, 36, 37, 38'.format(Nsplit) + bcolors.ENDC); import sys; sys.exit(0)
@@ -71,6 +71,26 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.mobilenet.get_workload(
             batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape
         )
+    elif name == "mobilenet_split-1_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=1,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,32,112,112);
+    elif name == "mobilenet_split-1_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=1,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,32,112,112);
+
+    elif name == "mobilenet_split-2_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=2,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,32,112,112);
+    elif name == "mobilenet_split-2_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=2,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,32,112,112);
+
+    elif name == "mobilenet_split-3_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=3,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,64,112,112);
+    elif name == "mobilenet_split-3_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=3,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,64,112,112);
 
     elif name == "mobilenet_split-4_0":
         mod, params = relay.testing.mobilenet_split.get_workload(N=4,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
@@ -93,6 +113,118 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.mobilenet_split.get_workload(N=6,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size,128,56,56);
 
+    elif name == "mobilenet_split-7_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=7,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,128,56,56);
+    elif name == "mobilenet_split-7_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=7,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,128,56,56);
+
+    elif name == "mobilenet_split-8_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=8,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,128,28,28);
+    elif name == "mobilenet_split-8_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=8,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,128,28,28);
+
+    elif name == "mobilenet_split-9_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=9,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,256,28,28);
+    elif name == "mobilenet_split-9_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=9,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,256,28,28);
+
+    elif name == "mobilenet_split-10_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=10,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,256,28,28);
+    elif name == "mobilenet_split-10_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=10,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,256,28,28);
+
+    elif name == "mobilenet_split-11_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=11,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,256,28,28);
+    elif name == "mobilenet_split-11_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=11,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,256,28,28);
+
+    elif name == "mobilenet_split-12_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=12,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,256,14,14);
+    elif name == "mobilenet_split-12_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=12,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,256,14,14);
+
+    elif name == "mobilenet_split-13_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=13,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-13_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=13,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-14_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=14,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-14_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=14,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-15_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=15,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-15_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=15,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-16_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=16,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-16_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=16,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-17_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=17,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-17_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=17,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-18_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=18,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-18_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=18,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-19_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=19,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-19_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=19,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-20_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=20,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-20_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=20,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-21_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=21,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-21_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=21,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
+    elif name == "mobilenet_split-22_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=22,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,14,14);
+    elif name == "mobilenet_split-22_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=22,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,14,14);
+
     elif name == "mobilenet_split-23_0":
         mod, params = relay.testing.mobilenet_split.get_workload(N=23,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         output_shape = (batch_size,512,14,14); 
@@ -100,11 +232,25 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.mobilenet_split.get_workload(N=23,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size,512,14,14);
 
+    elif name == "mobilenet_split-24_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=24,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,512,7,7); 
+    elif name == "mobilenet_split-24_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=24,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,512,7,7);
+
     elif name == "mobilenet_split-25_0":
         mod, params = relay.testing.mobilenet_split.get_workload(N=25,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         output_shape = (batch_size,1024,7,7);
     elif name == "mobilenet_split-25_1":
         mod, params = relay.testing.mobilenet_split.get_workload(N=25,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,1024,7,7);
+
+    elif name == "mobilenet_split-26_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=26,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,1024,7,7);
+    elif name == "mobilenet_split-26_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=26,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size,1024,7,7);
 
     elif name == "mobilenet_split-27_0":
@@ -114,6 +260,26 @@ def get_network(name, batch_size, layout="NHWC", dtype="float32", use_sparse=Fal
         mod, params = relay.testing.mobilenet_split.get_workload(N=27,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
         input_shape = (batch_size,1024,7,7);
 
+    elif name == "mobilenet_split-28_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=28,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,1024,1,1);
+    elif name == "mobilenet_split-28_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=28,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,1024,1,1);
+
+    elif name == "mobilenet_split-29_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=29,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,1024);
+    elif name == "mobilenet_split-29_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=29,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,1024);
+
+    elif name == "mobilenet_split-30_0":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=30,npartition=0, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        output_shape = (batch_size,1000);
+    elif name == "mobilenet_split-30_1":
+        mod, params = relay.testing.mobilenet_split.get_workload(N=30,npartition=1, batch_size=batch_size, layout=layout, dtype=dtype, image_shape=image_shape)
+        input_shape = (batch_size,1000);
 
     elif name == "squeezenet_v1.1":
         assert layout == "NCHW", "squeezenet_v1.1 only supports NCHW layout"

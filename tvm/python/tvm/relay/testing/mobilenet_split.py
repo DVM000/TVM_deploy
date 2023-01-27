@@ -207,9 +207,28 @@ def mobile_net(
     """Function to construct a MobileNet"""
     data = relay.var("data", shape=data_shape, dtype=dtype)
     body = conv_block(data, "conv_block_1", int(32 * alpha), strides=(2, 2), layout=layout)
-    body = separable_conv_block(
-        body, "separable_conv_block_1", int(32 * alpha), int(64 * alpha), layout=layout, dtype=dtype
-    )
+    if N == 1:
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],32,112,112), dtype=dtype)
+   
+    if N == 2:
+        body = separable_conv_block_A(
+            body, "separable_conv_block_1_a", int(32 * alpha), int(64 * alpha), layout=layout, dtype=dtype
+        )
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],32,112,112), dtype=dtype)
+        body = separable_conv_block_B(
+            body, "separable_conv_block_1_b", int(32 * alpha), int(64 * alpha), layout=layout, dtype=dtype
+        )
+    else:
+        body = separable_conv_block(
+            body, "separable_conv_block_1", int(32 * alpha), int(64 * alpha), layout=layout, dtype=dtype
+        )
+
+    if N == 3:
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],64,112,112), dtype=dtype)
+
     if N == 4:
         body = separable_conv_block_A(
             body,
@@ -273,32 +292,116 @@ def mobile_net(
             layout=layout,
             dtype=dtype,
         )
-    body = separable_conv_block(
-        body,
-        "separable_conv_block_4",
-        int(128 * alpha),
-        int(256 * alpha),
-        downsample=True,
-        layout=layout,
-        dtype=dtype,
-    )
-    body = separable_conv_block(
-        body,
-        "separable_conv_block_5",
-        int(256 * alpha),
-        int(256 * alpha),
-        layout=layout,
-        dtype=dtype,
-    )
-    body = separable_conv_block(
-        body,
-        "separable_conv_block_6",
-        int(256 * alpha),
-        int(512 * alpha),
-        downsample=True,
-        layout=layout,
-        dtype=dtype,
-    )
+
+    if N==7: 
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],128,56,56), dtype=dtype)
+
+    if N==8:
+        body = separable_conv_block_A(
+            body,
+            "separable_conv_block_4_a",
+            int(128 * alpha),
+            int(256 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        ) 
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],128,28,28), dtype=dtype)
+        body = separable_conv_block_B(
+            body,
+            "separable_conv_block_4_b",
+            int(128 * alpha),
+            int(256 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+    else:   
+        body = separable_conv_block(
+            body,
+            "separable_conv_block_4",
+            int(128 * alpha),
+            int(256 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+
+    if N==9: 
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],256,28,28), dtype=dtype)
+
+    if N==10:
+        body = separable_conv_block_A(
+            body,
+            "separable_conv_block_5_a",
+            int(256 * alpha),
+            int(256 * alpha),
+            layout=layout,
+            dtype=dtype,
+        )
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],256,28,28), dtype=dtype)
+        body = separable_conv_block_B(
+            body,
+            "separable_conv_block_5_b",
+            int(256 * alpha),
+            int(256 * alpha),
+            layout=layout,
+            dtype=dtype,
+        )
+    else:
+        body = separable_conv_block(
+            body,
+            "separable_conv_block_5",
+            int(256 * alpha),
+            int(256 * alpha),
+            layout=layout,
+            dtype=dtype,
+        )
+
+    if N==11: 
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],256,28,28), dtype=dtype)
+
+    if N==12: 
+        body = separable_conv_block_A(
+            body,
+            "separable_conv_block_6_a",
+            int(256 * alpha),
+            int(512 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],256,14,14), dtype=dtype)
+        body = separable_conv_block_B(
+            body,
+            "separable_conv_block_6_b",
+            int(256 * alpha),
+            int(512 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+    else:
+        body = separable_conv_block(
+            body,
+            "separable_conv_block_6",
+            int(256 * alpha),
+            int(512 * alpha),
+            downsample=True,
+            layout=layout,
+            dtype=dtype,
+        )
+
+    if N==13:
+        body1 = body
+        body = relay.var("data", shape=(data_shape[0],512,14,14), dtype=dtype)
+
     if is_shallow:
         body = separable_conv_block(
             body,
@@ -320,50 +423,116 @@ def mobile_net(
         )
     else:
         for i in range(7, 12):
-            body = separable_conv_block(
+            body = separable_conv_block_A(
                 body,
-                "separable_conv_block_%d" % i,
+                "separable_conv_block_%d_a" % i,
                 int(512 * alpha),
                 int(512 * alpha),
                 layout=layout,
                 dtype=dtype,
             )
-        if N==23: 
+            if (N==14 and i==7) or (N==16 and i==8) or (N==18 and i==9) or (N==20 and i==10) or (N==22 and i==11):
+                body1 = body
+                body = relay.var("data", shape=(data_shape[0],512,14,14), dtype=dtype)
+            body = separable_conv_block_B(
+                body,
+                "separable_conv_block_%d_b" % i,
+                int(512 * alpha),
+                int(512 * alpha),
+                layout=layout,
+                dtype=dtype,
+            )
+            if (N==15 and i==7) or (N==17 and i==8) or (N==19 and i==9) or (N==21 and i==10) or (N==23 and i==11):
+                body1 = body
+                body = relay.var("data", shape=(data_shape[0],512,14,14), dtype=dtype)
+        #if N==23: 
+        #    body1 = body
+        #    body = relay.var("data", shape=(data_shape[0],512,14,14), dtype=dtype)
+        if N==24:
+            body = separable_conv_block_A(
+                body,
+                "separable_conv_block_12_a",
+                int(512 * alpha),
+                int(1024 * alpha),
+                downsample=True,
+                layout=layout,
+                dtype=dtype,
+            )
             body1 = body
-            body = relay.var("data", shape=(data_shape[0],512,14,14), dtype=dtype)
-
-        body = separable_conv_block(
-            body,
-            "separable_conv_block_12",
-            int(512 * alpha),
-            int(1024 * alpha),
-            downsample=True,
-            layout=layout,
-            dtype=dtype,
-        )
+            body = relay.var("data", shape=(data_shape[0],512,7,7), dtype=dtype)
+            body = separable_conv_block_B(
+                body,
+                "separable_conv_block_12_b",
+                int(512 * alpha),
+                int(1024 * alpha),
+                downsample=True,
+                layout=layout,
+                dtype=dtype,
+            )
+        else:
+            body = separable_conv_block(
+                body,
+                "separable_conv_block_12",
+                int(512 * alpha),
+                int(1024 * alpha),
+                downsample=True,
+                layout=layout,
+                dtype=dtype,
+            )
         if N==25: 
             body1 = body
             body = relay.var("data", shape=(data_shape[0],1024,7,7), dtype=dtype)
 
-        body = separable_conv_block(
-            body,
-            "separable_conv_block_13",
-            int(1024 * alpha),
-            int(1024 * alpha),
-            layout=layout,
-            dtype=dtype,
-        )
+        if N==26: 
+            body = separable_conv_block_A(
+                    body,
+                    "separable_conv_block_13_a",
+                    int(1024 * alpha),
+                    int(1024 * alpha),
+                    layout=layout,
+                    dtype=dtype,
+                )
+            body1 = body
+            body = relay.var("data", shape=(data_shape[0],1024,7,7), dtype=dtype)
+            body = separable_conv_block_B(
+                    body,
+                    "separable_conv_block_13_b",
+                    int(1024 * alpha),
+                    int(1024 * alpha),
+                    layout=layout,
+                    dtype=dtype,
+                )
+        else:
+            body = separable_conv_block(
+                body,
+                "separable_conv_block_13",
+                int(1024 * alpha),
+                int(1024 * alpha),
+                layout=layout,
+                dtype=dtype,
+            )
+
     if N==27: 
         body1 = body
         body= relay.var("data", shape=(data_shape[0],1024,7,7), dtype=dtype)
 
     pool = relay.nn.global_avg_pool2d(data=body, layout=layout)
+
+    if N==28: 
+        body1 = pool
+        pool  = relay.var("data", shape=(data_shape[0],1024,1,1), dtype=dtype)
+
     flatten = relay.nn.batch_flatten(data=pool)
     weight = relay.var("fc_weight")
     bias = relay.var("fc_bias")
-    #data2 = relay.var("data", shape=(data_shape[0],1024), dtype=dtype)
+
+    if N==29: 
+        body1 = flatten
+        flatten  = relay.var("data", shape=(data_shape[0],1024), dtype=dtype)
+ 
     fc = relay.nn.dense(data=flatten, weight=weight, units=num_classes)
     fc = relay.nn.bias_add(fc, bias)
+
     if N==30: 
         body1 = fc
         fc = relay.var("data", shape=(data_shape[0],1000), dtype=dtype)
@@ -404,7 +573,7 @@ def get_workload(
     params : dict of str to NDArray
         The parameters.
     """
-    if N not in [4, 5, 6, 23, 25, 27, 30]:
+    if N not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]:
         print('mobilenet partition with {} layers not implemented'.format(N))
         import sys; sys.exit(1)
     data_shape = tuple([batch_size] + list(image_shape))
